@@ -1,5 +1,9 @@
+---
+typora-copy-images-to: images\CASB\OCI
+---
+
 ![](images/CASB/Banner.png)
-Updated: March 10, 2018
+Updated: November 22, 2018
 
 ## Introduction
 ___
@@ -10,14 +14,14 @@ ___
 ## Objectives
 ___
 The exercises will cover the following CASB features and concepts:
- 
+
 Advanced 
  - Sanctioned Application On-boarding 
  & Configure Security Control Baseline.
  - Reconfigure Security Control baseline
  - Risk Events & User Risk
  - Policy Configuration
- 
+
 
 ## Exercise 1. Sanctioned Application Onboarding 
 ___
@@ -75,12 +79,12 @@ At the bottom of the “*Password Policies*” page, click the "*Save*" button.
 <b>Account</b><br>
 
  <img src="images/CASB/casb-trial.png">
- 
+
  </center>
  </div>  
- 
+
  Start a **new private browsing tab in your browser and log into your Oracle Cloud Trial Account** with the appropriate credentials. Refer to the [workshop re-requisites](https://csdoracle.github.io/Cloud-Security-Day/CSD-SETUP.html) for instruction how to sign in to your Oracle Cloud trial account then go to the cloud "*Dashboard*" to access the trial CASB service.
- 
+
  ![](images/CASB/cloud_dash.png)
 
  ![](images/CASB/launch_trial_casb.png)
@@ -165,7 +169,7 @@ As the Salesforce service is being on-boarded **CASB will access the Salesforce 
 You can verify the changes by logging on to Salesforce and, as in Step 1 of this exercise, navigating to the "*Setup*" menu, then use the upper-left "*Quick Find*" box to search for “*Password Policies*” (no quotes) and review the "*User passwords expire in*" field to verify that it has been **changed back** to expire in 90 days, also notice that the enforce password history has been changed back to "*3 passwords remembered*”. 
 
 Since we selected to have the CASB Cloud Service push the security control setting to Salesforce the new Salesforce instance should not have any violations, **After the initial load is complete**, and should appear in the low risk services category. 
- 
+
  <div style="border:1px solid grey;padding:10px;margin-bottom:6px">
  <span style="color:grey">FYI, If we selected the "Monitor Only" option instead of the "*Push Controls and Monitor*" option in step 4 we would have had security control violations appear in the CASB dashboard for the Salesforce tenant after the initial scan. </span>
 
@@ -289,7 +293,7 @@ After adding this information, click on "*Next*".
 
 #### STEP 1.4: (Optional) Complete the "*Username*" panel
 You can leave these settings as default (blank) and click the "*Next*" button
-  
+
 
 #### STEP 1.5: Complete the "*Conditions*" panel
 **Optional** : Specify conditions to limit when the alert is triggered. 
@@ -329,7 +333,7 @@ The Policy will appear in the list of policies available for activation for the 
 To test the policy log in to the Salesforce account and perform an action on the *CEO* role that our new policy monitors.
 
  #### STEP 2.1: In the Salesforce "*Setup*" section navigate to *Users -> Roles*
- 
+
 
 ![](images/CASB/SFrole1.png)
 
@@ -351,8 +355,187 @@ To test the policy log in to the Salesforce account and perform an action on the
 
 ![](images/CASB/clock-icon.jpg) As noted before there is a delay between data collection cycles for the CASB service and the action you perform in Salesforce might not cause the policy alert in CASB to fire immediately but will appear on the next data collection that CASB does to the Salesforce tenant.
 
+## Exercise 5. CASB and Oracle OCI
 
+------
 
+#### Step 1 - Security Controls (for OCI)
 
+Security Controls are how CASB examines a cloud service like OCI for weak configurations. This may include the configuration of system-wide settings, auditing configuration, password complexity, session configuration, and settings of resources within the services that may impact a customer’s security risk posture. CASB can identify weaknesses in security configurations both from initial and ongoing bases to identify security configuration drift.
 
+CASB CS has roughly 16 (and counting) Security Controls implemented for OCI. Critical areas include Object Storage, Networking and IAM.
 
+Let’s take a look at the most famous vulnerability – a publicly-visible Storage Bucket. Public AWS S3 buckets have been root cause of most recent data breaches.
+
+CASB inspects each Bucket and finds those that are Public. Let’s find the Risk Events: ![1542908587832](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542908587832.png)
+
+Follow the numbered clicks to Un-toggle the “All” instances and select just the “lad-training-status” instance:![1542908639646](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542908639646.png)
+
+<br/>Use the search box to search for “public bucket”:![1542908662468](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542908662468.png)
+
+<br/>
+
+Click the row to expand. Note the highlighted items – Compartment, Region and Bucket name. This is all the
+information one needs to find a Bucket. Note the recommendation provided to the CASB analyst - they should ensure that this bucket was intended to be publicly visible.
+
+#### Step 2 - OCI: Become the Careless Admin
+
+Now let’s pretend to be an admin who’s not thinking about security.
+
+<https://console.us-ashburn-1.oraclecloud.com>
+
+![1542909067546](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909067546.png)
+
+We're using the tenant **“gse00014105”**.
+
+Login as **lad_training_user**, Password: **Oracle12345!**
+
+#### Step 2-1 - Create a new VCN
+
+Create a new VCN. Your own name as the name or choose something distinctive.
+
+Note: your fellow trainees will be able to see what names you chose.
+
+![1542909398710](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909398710.png)
+
+#### Step 2-2 - Attach a IGW
+
+Attachment of an Internet Gateway is a key event of allowing internet exposure. Attach an IGW to the VCN you just created. Use the compartment “STP” instead of what you seen in the screenshot.
+
+#### Step 2-3 - Create a new Public bucket
+
+Returning to the famous example. Create a new Bucket in the STP compartment and change visibility to “Public”.
+
+![1542909495572](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909495572.png)
+
+Make sure you have selected the STP compartment and name it after yourself.
+
+Click into the Bucket you just created and change the visibility.
+
+![1542909573671](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909573671.png)
+
+![1542909582570](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909582570.png)
+
+#### Step 3-1 - Register in CASB
+
+Let’s register the your compartment you’ve just been working with, so we can observe what CASB detects.
+
+Recall that CASB makes API calls to OCI. If you’ve created an API client for OCI before, the following steps should be similar.
+
+Go back to the CASB console to register your Compartment.
+
+![1542909679247](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909679247.png)
+
+Click the “+” sign.
+
+![1542909695189](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909695189.png)
+
+Choose OCI and click “Next”.
+
+![1542909710356](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909710356.png)
+
+Name your instance “STP_First_Last” and click “Next”.
+
+![1542909728397](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909728397.png)
+
+Fill in the fields:
+
+\1.       Tenancy OCID: ocid1.tenancy.oc1..aaaaaaaacnsg3iko7km2rdc5iltny3i3amnumlps24opbuwqhcftdizbzqja
+
+\2.       User OCID: ocid1.user.oc1..aaaaaaaao7jl3tlmmweiuguoqkmnt64yh5x2iwd74fksrm4fp5uxctpla5oq
+
+\3.       User public key fingerprint: 63:eb:36:52:91:65:ac:2c:27:30:13:11:4b:66:5c:6c
+
+\4.       The corresponding private key:
+
+-----BEGIN RSA PRIVATE KEY-----
+
+Proc-Type: 4,ENCRYPTED
+
+DEK-Info: DES-EDE3-CBC,A00E0E428CA783D8
+
+ 
+
+nxfKIN26YVojh+49d6BbLTDe8xVkgOHejm6aLJsrpN8zdIcBI7PGSO+u/hX9VeVE
+
+eFoig+7OaklJofsbzfoMRHYpvYQBFArvTAjlGRLbhBSFcI0yst1h6Qf/xQOs21YQ
+
+CMWq4RDAPadWLOFEHueZHLUDitn55Kq0ypYFfCVb6EHC/+jbgUffC026vc5MGrDH
+
+IsJFaJn9DaZA55mEElBAfeWBX1TuWsJFyoULKp1PoSlAdxMTSPjCxqksN3+2pLCi
+
+yCsYIHJyUWIOM1ouIBfaMPe/Ijk2ijCmhz6XwTCibqgkyn0iIjZZjpAH88g8cOx0
+
+wa+eSb2b2lvbKUYhfNENjzaIAxOOWPVb7zKnb7SqTXcdYoqLnaeWBUXvsOmyLR13
+
+sYNCqT+FAvcZ9dqCAbgfNyURsaMWIgMU6ZquOD/EhwYWXkaN7hMOflv6sOJSLqk9
+
+tkj/lIPIotGw6Vs7uIu1Awy8gLHxYuOehWCJzVvd7r/azY5h8lJjJF/gory+zlyt
+
+38GUruGHuPORueFpKVkQjvCLvbGGqDCjCkSyolCZBExUf4HBqJPf0tvMXnmp2NZK
+
+fh2Je26UabbUxpO6fmVkrKyiKQzLF5K7cEU7w2ZNayOQeUsMF7v7IO4ZXMRceI7l
+
+M/RdhpLfrKpLPuVg4j3dNXF1yaO6XsXML6JfjDtqkiKs8rYLwkB04AaWyuujV5/4
+
+e63lhlNB54iAPcOu4v6nU9kXnjfCEqQ+MxUfKj/a0/afBGK7P88NSKBoc5kNICdW
+
+PckfIuexMg30KKAbi2EW0XF4hhboGPJaUtj0o5Xkt6TVXqFBPGJeDuA4yDc5KIGh
+
+H/rw41UgUCe0YGbSumcnwDuR1A+22i9hs5Qwuxq1vZsXZoPFpiJoByH/WAlqC1L0
+
+m7ZqS2gLMOo0JLf0Or/tx0z8MNGyvFcRRn1H0FDcFJ/aB+85/UbaVy90YkRjI97F
+
+Hyw0vH7VMSe+VXf22Ossuw+I+E8I0ym0FONOj0Z+ktKv8n9umSERsRSWBLK82dF4
+
+xKS2Urkwnps2teouyWB+GP8AWMjxMBEbwb0nT2NYnJ35xeRcDBNdzrD4KgtyIpNF
+
+CpAuGopAnn9c7caehbFqTqCiRo9H+ibBPM0yZgU8x/w8mJFQexLtsZo84YgqIH8t
+
+qvtgEydPKMBxivKS122K4ktlzN6goEXcR02kQJQVgRZqBAJnU73bkagW3LjR7SK5
+
+z4kdMBpmOBlDODQWnzWnlI93kY0oYflbCfJ8bjAOVR2PnICi8Aj3QpOaNV+gVFgr
+
+agrEInS5FcsVemeo6wm30Crb1KM3dcmxZLH4kxDdnQYnX2NmmbZil8eppUr118nP
+
+yA6sqjN6g6wB1SjqFPH8rcTBGWQxRAQi//VWJCrw0mGQgTARcQS2axNfvYqOva8k
+
+Y1vNg1HfEJHTtLkhcKGKf8D6G/kENxH0RF1CiQhwGyy3XQtifNaaR6B2Tmtjhl9o
+
+efvO2PrhLwiAUmhvA/JyQA3Cuq4ms95cMJsKLJ5TLKYpBqmbo4ZIbNF5XjHIaZBf
+
+2uA0giX4hu7zKRL2HGBt5FXDSuu60G/6GEiFK6nLEdaZ32kg4Penhg==
+
+-----END RSA PRIVATE KEY-----
+
+\5.       Passphrase: Oracle12345!
+
+\6.       Choose a “Specific Compartment”. 
+
+\7.       Enter the OCID for the STP compartment: ocid1.compartment.oc1..aaaaaaaaanf6n44rhujgrvz6wnzr5qg2mxc7qt4vhnyiaal7p3mdv3n62vga
+
+\8.       Click “Test Credentials”. You should see a “Credentials are valid” message in the top right.
+
+\9.       Click “Submit”.
+
+#### Step 3-2 - CASB: Review the results of your registration
+
+Initial registration may take some time. When the application no longer has the state “New”, let’s take a look at what we found.
+
+![1542909801993](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909801993.png)
+
+Open up “Risk Events”, then toggle the switch for only your instance. With so many people registering, the list might be quite long, so you might need to scroll through quite a few instances.
+
+![1542909822662](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909822662.png)
+
+Close the drop-down and click “Search”.
+
+You should be able to see just the Risk Events for your instance. Click each one to expand for details.
+
+![1542909852005](D:\Documents\GitHub\Cloud-Security-Day\images\CASB\OCI\1542909852005.png)
+
+Note the values highlighted – the Event includes the names of your OCI resources.
+
+### Feedback 
+
+Please feel free to send use-cases, suggestions, enhancement requests to us!
